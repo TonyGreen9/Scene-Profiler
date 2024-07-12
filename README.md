@@ -83,7 +83,7 @@ Identifies and reports missing assets within the scene. Ensures that all necessa
 
 ## Support
 
-If you encounter any issues or have any questions regarding the Scene Profiler Tool, please me at [iamtonygreen@gmail.com](mailto:iamtonygreen@gmail.com).
+If you encounter any issues or have any questions regarding the Scene Profiler Tool, please message me at [iamtonygreen@gmail.com](mailto:iamtonygreen@gmail.com).
 
 ## License
 
