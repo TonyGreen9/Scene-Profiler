@@ -1,0 +1,7 @@
+{
+  "name": "com.tonygreen.sceneprofiler",
+  "version": "1.0.0",
+  "displayName": "Scene Profiler",
+  "description": "The Scene Profiler Tool operates by collecting data from various aspects of the scene, including physics, audio clips, particle systems, lights, materials, meshes, and textures. It then presents this data in a user-friendly GUI, allowing developers to easily identify performance bottlenecks and take appropriate actions to optimize their scenes.",
+  "unity": "2022.3"
+}
