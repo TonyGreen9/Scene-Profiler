@@ -8,12 +8,12 @@ namespace SceneProfiler.Editor
     public class CollectAudioClipData
     {
         private SceneProfiler _sceneProfiler;
-    
+
         public CollectAudioClipData(SceneProfiler sceneProfiler)
         {
             _sceneProfiler = sceneProfiler;
         }
-    
+
         public void CheckSelectedFolder()
         {
             if (!_sceneProfiler.IncludeSelectedFolder || Selection.objects.Length == 0) return;
@@ -38,15 +38,14 @@ namespace SceneProfiler.Editor
                         var tClipDetails = FindClipDetails(item);
                         if (tClipDetails == null)
                         {
-                            tClipDetails = new AudioClipDetails();
-                            tClipDetails.clip = item;
+                            tClipDetails = new AudioClipDetails { clip = item };
                             _sceneProfiler.ActiveClipDetails.Add(tClipDetails);
                         }
                     }
                 }
             }
         }
-    
+
         AudioClipDetails FindClipDetails(AudioClip tClip)
         {
             foreach (AudioClipDetails tClipDetails in _sceneProfiler.ActiveClipDetails)
@@ -55,7 +54,7 @@ namespace SceneProfiler.Editor
             }
             return null;
         }
-    
+
         public void CheckAudioSources()
         {
             AudioSource[] AudioSources = _sceneProfiler.FindObjects<AudioSource>();
@@ -68,25 +67,25 @@ namespace SceneProfiler.Editor
                     AudioClipDetails tClipDetails = FindClipDetails(tClip);
                     if (tClipDetails == null)
                     {
-                        tClipDetails = new AudioClipDetails();
-                        tClipDetails.clip = tClip;
+                        tClipDetails = new AudioClipDetails { clip = tClip };
                         _sceneProfiler.ActiveClipDetails.Add(tClipDetails);
                     }
                     tClipDetails.FoundInAudioSources.Add(tAudioSource);
-
                 }
-                else if (tClip == null)
+                else
                 {
-                    Missing tMissing = new Missing();
-                    tMissing.Object = tAudioSource.transform;
-                    tMissing.type = "audio clip";
-                    tMissing.name = tAudioSource.transform.name;
+                    Missing tMissing = new Missing
+                    {
+                        Object = tAudioSource.transform,
+                        type = "audio clip",
+                        name = tAudioSource.transform.name
+                    };
                     _sceneProfiler.MissingObjects.Add(tMissing);
                     _sceneProfiler.thingsMissing = true;
                 }
             }
         }
-    
+
         public void CheckAudioClipReferences(FieldInfo field, MonoBehaviour script)
         {
             if (field.FieldType == typeof(AudioClip))
@@ -97,8 +96,7 @@ namespace SceneProfiler.Editor
                     AudioClipDetails tClipDetails = FindClipDetails(tClip);
                     if (tClipDetails == null)
                     {
-                        tClipDetails = new AudioClipDetails();
-                        tClipDetails.clip = tClip;
+                        tClipDetails = new AudioClipDetails { clip = tClip };
                         _sceneProfiler.ActiveClipDetails.Add(tClipDetails);
                     }
                 }

@@ -20,17 +20,16 @@ namespace SceneProfiler.Editor.GUI
             InitializeColumnHeader();
         }
 
-
         protected override void InitializeColumns()
         {
             var columnDefinitions = new (string, float, bool)[]
             {
                 ("Thumbnail", 70, false),
                 ("Texture", 150, false),
-                ("Resolution", 80, false), 
-                ("Size", 60, false),       
-                ("Mipmap", 50, false),     
-                ("Format", 100, false),     
+                ("Resolution", 80, false),
+                ("Size", 60, false),
+                ("Mipmap", 50, false),
+                ("Format", 100, false),
                 ("Materials", 60, false),
                 ("GameObjects", 100, false),
                 ("Path", 500, true)
@@ -39,7 +38,6 @@ namespace SceneProfiler.Editor.GUI
             columns = columnDefinitions.Select(def => CreateColumn(def.Item1, def.Item2, def.Item3)).ToArray();
         }
 
-    
         protected override List<TextureDetails> GetProfilerItems()
         {
             return profiler.ActiveTextures;
@@ -61,19 +59,17 @@ namespace SceneProfiler.Editor.GUI
                 case 5: return string.Compare(a.format.ToString(), b.format.ToString()); // Format
                 case 6: return a.FoundInMaterials.Count.CompareTo(b.FoundInMaterials.Count);
                 case 7:
-                    int aCount = (a.FoundInRenderers?.Count ?? 0) + (a.FoundInAnimators?.Count ?? 0) + 
-                                 (a.FoundInGraphics?.Count ?? 0) + (a.FoundInButtons?.Count ?? 0) + 
+                    int aCount = (a.FoundInRenderers?.Count ?? 0) + (a.FoundInAnimators?.Count ?? 0) +
+                                 (a.FoundInGraphics?.Count ?? 0) + (a.FoundInButtons?.Count ?? 0) +
                                  (a.FoundInScripts?.Count ?? 0);
-                    int bCount = (b.FoundInRenderers?.Count ?? 0) + (b.FoundInAnimators?.Count ?? 0) + 
-                                 (b.FoundInGraphics?.Count ?? 0) + (b.FoundInButtons?.Count ?? 0) + 
+                    int bCount = (b.FoundInRenderers?.Count ?? 0) + (b.FoundInAnimators?.Count ?? 0) +
+                                 (b.FoundInGraphics?.Count ?? 0) + (b.FoundInButtons?.Count ?? 0) +
                                  (b.FoundInScripts?.Count ?? 0);
                     return aCount.CompareTo(bCount);
                 case 8: return string.Compare(AssetDatabase.GetAssetPath(a.texture), AssetDatabase.GetAssetPath(b.texture));
                 default: return 0;
             }
         }
-
-
 
         public void ListTextures()
         {
@@ -87,12 +83,11 @@ namespace SceneProfiler.Editor.GUI
 
             scrollPosition = EditorGUILayout.BeginScrollView(scrollPosition);
 
+            int displayedTextures = 0;
             foreach (TextureDetails tDetails in profiler.ActiveTextures)
             {
-                if (tDetails.texture == null)
-                {
-                    continue;
-                }
+                if (displayedTextures >= profiler.currentObjectsInColumnCount) break;
+                if (tDetails.texture == null) continue;
 
                 EditorGUILayout.BeginHorizontal();
 
@@ -135,11 +130,23 @@ namespace SceneProfiler.Editor.GUI
                 }
 
                 EditorGUILayout.EndHorizontal();
+                displayedTextures++;
+            }
+
+            if (profiler.currentObjectsInColumnCount < profiler.ActiveTextures.Count)
+            {
+                GUILayout.BeginHorizontal();
+                GUILayout.FlexibleSpace();
+                if (GUILayout.Button("Load More", GUILayout.Width(150)))
+                {
+                    profiler.currentObjectsInColumnCount += 100;
+                }
+                GUILayout.FlexibleSpace();
+                GUILayout.EndHorizontal();
             }
 
             EditorGUILayout.EndScrollView();
         }
-
 
         private void DrawThumbnail(TextureDetails tDetails, Rect cellRect)
         {
@@ -169,7 +176,7 @@ namespace SceneProfiler.Editor.GUI
 
             UnityEngine.GUI.color = originalColor;
         }
-    
+
         private void DrawResolution(TextureDetails tDetails, Rect cellRect)
         {
             string resolution = $"{tDetails.texture.width}x{tDetails.texture.height}";
@@ -186,7 +193,6 @@ namespace SceneProfiler.Editor.GUI
             EditorGUI.LabelField(cellRect, size, labelStyle);
         }
 
-
         private void DrawMipmap(TextureDetails tDetails, Rect cellRect)
         {
             string mipmap = tDetails.mipMapCount.ToString();
@@ -199,7 +205,6 @@ namespace SceneProfiler.Editor.GUI
             EditorGUI.LabelField(cellRect, format, labelStyle);
         }
 
-    
         private void DrawMaterialsButton(TextureDetails tDetails, Rect cellRect)
         {
             if (UnityEngine.GUI.Button(cellRect, tDetails.FoundInMaterials.Count + " Mat", buttonStyle))
@@ -207,7 +212,7 @@ namespace SceneProfiler.Editor.GUI
                 profiler.SelectObjects(tDetails.FoundInMaterials, profiler.ctrlPressed);
             }
         }
-    
+
         private void DrawGameObjectsButton(TextureDetails tDetails, Rect cellRect)
         {
             HashSet<Object> FoundObjects = new HashSet<Object>();
@@ -237,10 +242,11 @@ namespace SceneProfiler.Editor.GUI
                 profiler.SelectObjects(new List<Object>(FoundObjects), profiler.ctrlPressed);
             }
         }
-    
+
         private void DrawTexturePath(TextureDetails tDetails, Rect cellRect)
         {
             EditorGUI.LabelField(cellRect, AssetDatabase.GetAssetPath(tDetails.texture), labelStyle);
         }
     }
 }
+

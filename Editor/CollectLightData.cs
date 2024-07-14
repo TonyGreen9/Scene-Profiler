@@ -19,13 +19,18 @@ namespace SceneProfiler.Editor
 
             foreach (Light light in lights)
             {
-                LightDetails lightDetails = new LightDetails();
-                lightDetails.light = light;
-                lightDetails.isEnabled = light.enabled;
-                lightDetails.shadowType = light.shadows;
-                lightDetails.isActive = light.gameObject.activeInHierarchy; 
+                if (!_sceneProfiler.ActiveLights.Any(l => l.light == light))
+                {
+                    LightDetails lightDetails = new LightDetails
+                    {
+                        light = light,
+                        isEnabled = light.enabled,
+                        shadowType = light.shadows,
+                        isActive = light.gameObject.activeInHierarchy
+                    };
 
-                _sceneProfiler.ActiveLights.Add(lightDetails);
+                    _sceneProfiler.ActiveLights.Add(lightDetails);
+                }
             }
         }
     

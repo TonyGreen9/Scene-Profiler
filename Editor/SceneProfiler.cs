@@ -16,7 +16,7 @@ namespace SceneProfiler.Editor
     {
         public enum InspectType
         {
-            Textures, Materials, Meshes, AudioClips, Missing, Particles, Lights, Physics
+            Textures, Materials, Meshes, AudioClips, Missing, Particles, Lights, Physics, Expensive
         };
 
         public bool includeDisabledObjects = true;
@@ -38,6 +38,7 @@ namespace SceneProfiler.Editor
         public List<LightDetails> ActiveLights = new List<LightDetails>();
         public List<PhysicsObjectDetails> ActivePhysicsObjects = new List<PhysicsObjectDetails>();
         public List<SceneWarningDetails> Warnings = new List<SceneWarningDetails>();
+        public List<ExpensiveObjectDetails> ActiveExpensiveObjects = new List<ExpensiveObjectDetails>();
 
         public float TotalTextureMemory = 0;
         public int TotalMeshVertices = 0;
@@ -45,7 +46,7 @@ namespace SceneProfiler.Editor
         public bool ctrlPressed = false;
 
         private static int _minWidth = 800;
-        public int currentMeshCount = 100;
+        public int currentObjectsInColumnCount = 100;
 
         private SceneProfilerGUI _sceneProfilerGUI;
         private CollectTextureData _collectTextureData;
@@ -56,6 +57,7 @@ namespace SceneProfiler.Editor
         private CollectLightData _collectLightData;
         private CollectPhysicsData _collectPhysicsData;
         private CollectWarningsData _collectWarningsData;
+        private CollectExpensiveObject _collectExpensiveObject;
 
         [MenuItem("Window/Analysis/Scene Profiler")]
         public static void Init()
@@ -78,6 +80,7 @@ namespace SceneProfiler.Editor
             _collectLightData = new CollectLightData(this);
             _collectPhysicsData = new CollectPhysicsData(this);
             _collectWarningsData = new CollectWarningsData(this);
+            _collectExpensiveObject = new CollectExpensiveObject(this);
             EditorSceneManager.sceneOpened += OnSceneOpened;
             EditorApplication.playModeStateChanged += OnPlayModeStateChanged;
             ClearAndRepaint();
@@ -112,6 +115,7 @@ namespace SceneProfiler.Editor
             ActiveParticleSystems.Clear();
             ActiveLights.Clear();
             ActivePhysicsObjects.Clear();
+            ActiveExpensiveObjects.Clear();
             Warnings.Clear();
 
             TotalTextureMemory = 0;
@@ -195,8 +199,10 @@ namespace SceneProfiler.Editor
             ActiveParticleSystems.Clear();
             ActiveLights.Clear();
             ActivePhysicsObjects.Clear();
+            ActiveExpensiveObjects.Clear();
             thingsMissing = false;
-        
+            _collectExpensiveObject.CollectData();
+            Debug.Log($"Expensive Objects After Collection: {ActiveExpensiveObjects.Count}");
             _сollectParticleSystemData.CheckParticleSystems();
             _collectLightData.CheckLights();
             _collectPhysicsData.CheckPhysicsObjects();
@@ -409,6 +415,34 @@ namespace SceneProfiler.Editor
             }
             else
                 return (T[])FindObjectsOfType(typeof(T));
+        }
+        
+        public List<GameObject> FindAllGameObjects()
+        {
+            List<GameObject> allObjects = new List<GameObject>();
+            for (int i = 0; i < SceneManager.sceneCount; i++)
+            {
+                Scene scene = SceneManager.GetSceneAt(i);
+                if (scene.isLoaded)
+                {
+                    allObjects.AddRange(scene.GetRootGameObjects());
+                }
+            }
+
+            List<GameObject> dontDestroyOnLoadObjects = GetDontDestroyOnLoadRoots();
+            allObjects.AddRange(dontDestroyOnLoadObjects);
+
+            if (includeDisabledObjects)
+            {
+                List<GameObject> allObjectsWithChildren = new List<GameObject>();
+                foreach (GameObject go in allObjects)
+                {
+                    allObjectsWithChildren.AddRange(go.GetComponentsInChildren<Transform>(true).Select(t => t.gameObject));
+                }
+                return allObjectsWithChildren;
+            }
+
+            return allObjects;
         }
     }
 }

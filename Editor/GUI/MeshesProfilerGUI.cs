@@ -63,7 +63,7 @@ namespace SceneProfiler.Editor.GUI
             int displayedMeshes = 0;
             foreach (MeshDetails tDetails in profiler.ActiveMeshDetails)
             {
-                if (displayedMeshes >= profiler.currentMeshCount) break;
+                if (displayedMeshes >= profiler.currentObjectsInColumnCount) break;
                 if (tDetails.mesh == null) continue;
 
                 EditorGUILayout.BeginHorizontal();
@@ -105,13 +105,13 @@ namespace SceneProfiler.Editor.GUI
                 displayedMeshes++;
             }
 
-            if (profiler.currentMeshCount < profiler.ActiveMeshDetails.Count)
+            if (profiler.currentObjectsInColumnCount < profiler.ActiveMeshDetails.Count)
             {
                 GUILayout.BeginHorizontal();
                 GUILayout.FlexibleSpace();
                 if (GUILayout.Button("Load More", GUILayout.Width(150)))
                 {
-                    profiler.currentMeshCount += 100;
+                    profiler.currentObjectsInColumnCount += 100;
                 }
                 GUILayout.FlexibleSpace();
                 GUILayout.EndHorizontal();

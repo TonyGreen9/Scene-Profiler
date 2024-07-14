@@ -10,8 +10,8 @@ namespace SceneProfiler.Editor.GUI
 {
     public class MaterialsProfilerGUI : ProfilerGUI<MaterialDetails>
     {
-    
         private Func<float> _getRowHeight;
+
         public MaterialsProfilerGUI(SceneProfiler profiler, Color defColor, Func<float> getRowHeight)
             : base(profiler, defColor)
         {
@@ -61,7 +61,6 @@ namespace SceneProfiler.Editor.GUI
             }
         }
 
-
         public void ListMaterials()
         {
             if (buttonStyle == null || labelStyle == null)
@@ -74,8 +73,10 @@ namespace SceneProfiler.Editor.GUI
 
             scrollPosition = EditorGUILayout.BeginScrollView(scrollPosition);
 
+            int displayedMaterials = 0;
             foreach (MaterialDetails tDetails in profiler.ActiveMaterials)
             {
+                if (displayedMaterials >= profiler.currentObjectsInColumnCount) break;
                 if (tDetails.material == null) continue;
 
                 EditorGUILayout.BeginHorizontal();
@@ -114,6 +115,19 @@ namespace SceneProfiler.Editor.GUI
                 }
 
                 EditorGUILayout.EndHorizontal();
+                displayedMaterials++;
+            }
+
+            if (profiler.currentObjectsInColumnCount < profiler.ActiveMaterials.Count)
+            {
+                GUILayout.BeginHorizontal();
+                GUILayout.FlexibleSpace();
+                if (GUILayout.Button("Load More", GUILayout.Width(150)))
+                {
+                    profiler.currentObjectsInColumnCount += 100;
+                }
+                GUILayout.FlexibleSpace();
+                GUILayout.EndHorizontal();
             }
 
             EditorGUILayout.EndScrollView();

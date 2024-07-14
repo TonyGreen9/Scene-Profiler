@@ -21,7 +21,10 @@ namespace SceneProfiler.Editor
             {
                 if (rb != null)
                 {
-                    _sceneProfiler.ActivePhysicsObjects.Add(new PhysicsObjectDetails(rb));
+                    if (!_sceneProfiler.ActivePhysicsObjects.Any(p => p.rigidbody == rb))
+                    {
+                        _sceneProfiler.ActivePhysicsObjects.Add(new PhysicsObjectDetails(rb));
+                    }
                 }
             }
         }
@@ -33,10 +36,9 @@ namespace SceneProfiler.Editor
                 Rigidbody tRigidbody = field.GetValue(script) as Rigidbody;
                 if (tRigidbody != null)
                 {
-                    PhysicsObjectDetails tPhysicsObjectDetails = new PhysicsObjectDetails(tRigidbody);
-
                     if (!_sceneProfiler.ActivePhysicsObjects.Any(r => r.rigidbody == tRigidbody))
                     {
+                        PhysicsObjectDetails tPhysicsObjectDetails = new PhysicsObjectDetails(tRigidbody);
                         _sceneProfiler.ActivePhysicsObjects.Add(tPhysicsObjectDetails);
                     }
                 }

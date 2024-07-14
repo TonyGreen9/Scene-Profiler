@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 
@@ -27,6 +28,9 @@ namespace SceneProfiler.Editor.GUI
         private MissingProfilerGUI _missingProfilerGUI;
         private AudioClipsProfilerGUI _audioClipsProfilerGUI;
         private WarningsGUI _warningsGUI;
+        private ExpensiveProfilerGUI _expensiveProfilerGUI;
+        
+        private Dictionary<SceneProfiler.InspectType, bool> _moduleStates = new Dictionary<SceneProfiler.InspectType, bool>();
     
 
         public SceneProfilerGUI(SceneProfiler profiler)
@@ -40,7 +44,22 @@ namespace SceneProfiler.Editor.GUI
             _materialsProfilerGUI = new MaterialsProfilerGUI(profiler, _defColor, () => _rowHeight);
             _missingProfilerGUI = new MissingProfilerGUI(profiler, _defColor);
             _audioClipsProfilerGUI = new AudioClipsProfilerGUI(profiler, _defColor, () => _rowHeight);
+            _expensiveProfilerGUI = new ExpensiveProfilerGUI(profiler, _defColor);
             _warningsGUI = new WarningsGUI(profiler);
+            
+            _moduleStates = new Dictionary<SceneProfiler.InspectType, bool>
+            {
+                { SceneProfiler.InspectType.Textures, true },
+                { SceneProfiler.InspectType.Materials, true },
+                { SceneProfiler.InspectType.Meshes, true },
+                { SceneProfiler.InspectType.AudioClips, true },
+                { SceneProfiler.InspectType.Particles, true },
+                { SceneProfiler.InspectType.Lights, true },
+                { SceneProfiler.InspectType.Physics, true },
+                { SceneProfiler.InspectType.Missing, true },
+                { SceneProfiler.InspectType.Expensive, true }
+            };
+            
         }
     
         public SceneProfiler Profiler => _profiler;
@@ -78,6 +97,8 @@ namespace SceneProfiler.Editor.GUI
             {
                 _profiler.ClearAndRepaint();
             }
+            
+            DrawModuleDropdownMenu();
 
             GUILayout.FlexibleSpace();
         
@@ -102,11 +123,15 @@ namespace SceneProfiler.Editor.GUI
 
             GUILayout.BeginHorizontal();
             float windowWidth = EditorGUIUtility.currentViewWidth;
-            int buttonCount = System.Enum.GetValues(typeof(SceneProfiler.InspectType)).Length;
-            float buttonWidth = windowWidth / buttonCount;
+            int activeButtonCount = 0;
+            foreach (var state in _moduleStates.Values)
+            {
+                if (state) activeButtonCount++;
+            }
+            float buttonWidth = windowWidth / activeButtonCount;
             GUILayoutOption buttonHeightOption = GUILayout.Height(buttonHeight + 1);
             GUILayoutOption buttonWidthOption = GUILayout.Width(buttonWidth);
-        
+
             string[] toolbarLabels = {
                 $"Textures ({_profiler.ActiveTextures.Count})\n{_profiler.FormatSizeString(_profiler.TotalTextureMemory)}",
                 $"Materials ({_profiler.ActiveMaterials.Count})\n{_profiler.UniqueShadersCount} shaders",
@@ -115,14 +140,18 @@ namespace SceneProfiler.Editor.GUI
                 $"Missing ({_profiler.MissingObjects.Count})",
                 $"Particles ({_profiler.ActiveParticleSystems.Count})",
                 $"Lights ({_profiler.ActiveLights.Count})",
-                $"Physics ({_profiler.ActivePhysicsObjects.Count})"
+                $"Physics ({_profiler.ActivePhysicsObjects.Count})",
+                $"Expensive ({_profiler.ActiveExpensiveObjects.Count})"
             };
 
             for (int i = 0; i < toolbarLabels.Length; i++)
             {
-                if (GUILayout.Toggle(_profiler.ActiveInspectType == (SceneProfiler.InspectType)i, toolbarLabels[i], ButtonStyle, buttonWidthOption, buttonHeightOption))
+                if (_moduleStates[(SceneProfiler.InspectType)i])
                 {
-                    _profiler.ActiveInspectType = (SceneProfiler.InspectType)i;
+                    if (GUILayout.Toggle(_profiler.ActiveInspectType == (SceneProfiler.InspectType)i, toolbarLabels[i], ButtonStyle, buttonWidthOption, buttonHeightOption))
+                    {
+                        _profiler.ActiveInspectType = (SceneProfiler.InspectType)i;
+                    }
                 }
             }
 
@@ -163,6 +192,9 @@ namespace SceneProfiler.Editor.GUI
                 case SceneProfiler.InspectType.Physics:
                     _physicsProfilerGUI.ListPhysicsObjects();
                     break;
+                case SceneProfiler.InspectType.Expensive:
+                    _expensiveProfilerGUI.ListExpensiveObjects();
+                    break;
             }
         }
     
@@ -191,6 +223,51 @@ namespace SceneProfiler.Editor.GUI
             {
                 _showWarnings = !_showWarnings;
             }
+        }
+        
+        private void DrawModuleDropdownMenu()
+        {
+            if (GUILayout.Button(new GUIContent("Modules", "Toggle the display of modules"), EditorStyles.toolbarDropDown))
+            {
+                Rect dropdownRect = GUILayoutUtility.GetLastRect();
+                GenericMenu menu = new GenericMenu();
+                foreach (SceneProfiler.InspectType type in System.Enum.GetValues(typeof(SceneProfiler.InspectType)))
+                {
+                    SceneProfiler.InspectType localType = type;
+                    menu.AddItem(new GUIContent(type.ToString()), _moduleStates[type], () => ToggleModuleState(localType));
+                }
+                menu.DropDown(new Rect(120, 20, 0, 0));
+            }
+        }
+        
+        private void ToggleModuleState(SceneProfiler.InspectType type)
+        {
+            if (_moduleStates[type])
+            {
+                int activeCount = 0;
+                foreach (var state in _moduleStates.Values)
+                {
+                    if (state) activeCount++;
+                }
+
+                if (activeCount <= 1) return;
+            }
+
+            _moduleStates[type] = !_moduleStates[type];
+
+            if (!_moduleStates[_profiler.ActiveInspectType])
+            {
+                foreach (var key in _moduleStates.Keys)
+                {
+                    if (_moduleStates[key])
+                    {
+                        _profiler.ActiveInspectType = key;
+                        break;
+                    }
+                }
+            }
+
+            _profiler.ClearAndRepaint();
         }
     }
 }

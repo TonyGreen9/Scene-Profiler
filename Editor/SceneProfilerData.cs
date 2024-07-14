@@ -157,4 +157,52 @@ namespace SceneProfiler.Editor
             Type = type;
         }
     }
+    
+    public class ExpensiveObjectDetails
+    {
+        public GameObject gameObject;
+        public Vector3 scale;
+        public string scaleType;
+        public int hierarchyDepth;
+        public int componentCount;
+
+        public ExpensiveObjectDetails(GameObject obj)
+        {
+            gameObject = obj;
+            scale = obj.transform.localScale;
+            scaleType = IsUniformScale(scale) ? "Uniform" : "NonUniform";
+            hierarchyDepth = GetHierarchyDepth(obj.transform);
+            componentCount = obj.GetComponents<Component>().Length;
+        }
+
+        private bool IsUniformScale(Vector3 scale)
+        {
+            return Mathf.Approximately(scale.x, scale.y) && Mathf.Approximately(scale.y, scale.z);
+        }
+
+        private int GetHierarchyDepth(Transform transform)
+        {
+            int depth = 0;
+            while (transform.parent != null)
+            {
+                depth++;
+                transform = transform.parent;
+            }
+            return depth;
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (obj is ExpensiveObjectDetails other)
+            {
+                return gameObject == other.gameObject;
+            }
+            return false;
+        }
+
+        public override int GetHashCode()
+        {
+            return gameObject.GetHashCode();
+        }
+    }
 }
