@@ -202,7 +202,6 @@ namespace SceneProfiler.Editor
             ActiveExpensiveObjects.Clear();
             thingsMissing = false;
             _collectExpensiveObject.CollectData();
-            Debug.Log($"Expensive Objects After Collection: {ActiveExpensiveObjects.Count}");
             _сollectParticleSystemData.CheckParticleSystems();
             _collectLightData.CheckLights();
             _collectPhysicsData.CheckPhysicsObjects();
