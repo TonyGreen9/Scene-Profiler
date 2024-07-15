@@ -136,16 +136,20 @@ namespace SceneProfiler.Editor.GUI
 
         private void DrawThumbnail(MaterialDetails tDetails, Rect cellRect)
         {
-            if (!materialPreviewCache.TryGetValue(tDetails.material, out var previewTexture) || previewTexture == null)
+            if (!materialPreviewCache.TryGetValue(tDetails.material, out var previewTexture) || previewTexture == null || previewTexture == AssetPreview.GetMiniThumbnail(tDetails.material))
             {
-                previewTexture = AssetPreview.GetAssetPreview(tDetails.material);
+                var fullPreviewTexture = AssetPreview.GetAssetPreview(tDetails.material);
                 
-                if (previewTexture == null)
+                if (fullPreviewTexture != null)
+                {
+                    previewTexture = fullPreviewTexture;
+                    materialPreviewCache[tDetails.material] = fullPreviewTexture;
+                }
+                else if (previewTexture == null)
                 {
                     previewTexture = AssetPreview.GetMiniThumbnail(tDetails.material);
+                    materialPreviewCache[tDetails.material] = previewTexture;
                 }
-                
-                materialPreviewCache[tDetails.material] = previewTexture;
             }
 
             if (previewTexture != null)
@@ -157,6 +161,7 @@ namespace SceneProfiler.Editor.GUI
                 EditorGUI.LabelField(cellRect, "No Preview", labelStyle);
             }
         }
+
 
         private void DrawMaterialName(MaterialDetails tDetails, Rect cellRect)
         {
