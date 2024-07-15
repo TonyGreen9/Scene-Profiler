@@ -151,13 +151,9 @@ namespace SceneProfiler.Editor.GUI
 
         private void DrawThumbnail(TextureDetails tDetails, Rect cellRect)
         {
-            if (!texturePreviewCache.TryGetValue(tDetails.texture, out var previewTexture))
+            if (!texturePreviewCache.TryGetValue(tDetails.texture, out var previewTexture) || previewTexture == null)
             {
-                if (tDetails.texture == null)
-                {
-                    previewTexture = null;
-                }
-                else if (tDetails.texture.GetType() == typeof(Texture2DArray) || tDetails.texture.GetType() == typeof(Cubemap))
+                if (tDetails.texture.GetType() == typeof(Texture2DArray) || tDetails.texture.GetType() == typeof(Cubemap))
                 {
                     previewTexture = AssetPreview.GetMiniThumbnail(tDetails.texture);
                 }
@@ -165,6 +161,12 @@ namespace SceneProfiler.Editor.GUI
                 {
                     previewTexture = AssetPreview.GetAssetPreview(tDetails.texture);
                 }
+                
+                if (previewTexture == null)
+                {
+                    previewTexture = AssetPreview.GetMiniThumbnail(tDetails.texture);
+                }
+
                 texturePreviewCache[tDetails.texture] = previewTexture;
             }
 

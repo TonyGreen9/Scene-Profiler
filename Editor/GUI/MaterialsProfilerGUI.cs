@@ -136,9 +136,15 @@ namespace SceneProfiler.Editor.GUI
 
         private void DrawThumbnail(MaterialDetails tDetails, Rect cellRect)
         {
-            if (!materialPreviewCache.TryGetValue(tDetails.material, out var previewTexture))
+            if (!materialPreviewCache.TryGetValue(tDetails.material, out var previewTexture) || previewTexture == null)
             {
                 previewTexture = AssetPreview.GetAssetPreview(tDetails.material);
+                
+                if (previewTexture == null)
+                {
+                    previewTexture = AssetPreview.GetMiniThumbnail(tDetails.material);
+                }
+
                 materialPreviewCache[tDetails.material] = previewTexture;
             }
 
