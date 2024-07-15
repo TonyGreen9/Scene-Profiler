@@ -1,5 +1,7 @@
 # Scene Profiler Tool for Unity
 
+![Scene Profiler Tool](https://github.com/TonyGreen9/Scene-Profiler/raw/main/SceneProfiler.png)
+
 The Scene Profiler Tool is a powerful utility designed to help Unity developers optimize their scenes by providing comprehensive profiling of various scene elements.
 
 ## Table of Contents
