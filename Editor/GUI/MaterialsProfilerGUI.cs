@@ -12,6 +12,7 @@ namespace SceneProfiler.Editor.GUI
     {
         private Func<float> _getRowHeight;
         private Dictionary<Material, Texture2D> materialPreviewCache = new Dictionary<Material, Texture2D>();
+        private HashSet<Material> loadingMaterials = new HashSet<Material>();
 
         public MaterialsProfilerGUI(SceneProfiler profiler, Color defColor, Func<float> getRowHeight)
             : base(profiler, defColor)
@@ -138,19 +139,13 @@ namespace SceneProfiler.Editor.GUI
         {
             if (!materialPreviewCache.TryGetValue(tDetails.material, out var previewTexture) || previewTexture == null)
             {
-                if (AssetPreview.IsLoadingAssetPreview(tDetails.material.GetInstanceID()))
+                if (!loadingMaterials.Contains(tDetails.material))
                 {
-                    EditorGUI.LabelField(cellRect, "Loading...", labelStyle);
-                    return;
+                    loadingMaterials.Add(tDetails.material);
+                    EditorApplication.update += () => LoadPreviewAsync(tDetails.material);
                 }
                 
-                previewTexture = AssetPreview.GetAssetPreview(tDetails.material);
-        
-                if (previewTexture == null)
-                {
-                    previewTexture = AssetPreview.GetMiniThumbnail(tDetails.material);
-                }
-                
+                previewTexture = AssetPreview.GetMiniThumbnail(tDetails.material);
                 materialPreviewCache[tDetails.material] = previewTexture;
             }
 
@@ -162,6 +157,25 @@ namespace SceneProfiler.Editor.GUI
             {
                 EditorGUI.LabelField(cellRect, "No Preview", labelStyle);
             }
+        }
+        
+        private void LoadPreviewAsync(Material material)
+        {
+            
+            if (AssetPreview.IsLoadingAssetPreview(material.GetInstanceID()))
+            {
+                return;
+            }
+            
+            var fullPreviewTexture = AssetPreview.GetAssetPreview(material);
+            
+            if (fullPreviewTexture != null)
+            {
+                materialPreviewCache[material] = fullPreviewTexture;
+            }
+            
+            loadingMaterials.Remove(material);
+            EditorApplication.update -= () => LoadPreviewAsync(material);
         }
 
 
