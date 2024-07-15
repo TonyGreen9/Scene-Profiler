@@ -12,9 +12,6 @@ namespace SceneProfiler.Editor.GUI
     {
         private Func<float> _getRowHeight;
         private Dictionary<Material, Texture2D> materialPreviewCache = new Dictionary<Material, Texture2D>();
-        private HashSet<Material> loadingMaterials = new HashSet<Material>();
-        private Queue<Material> materialsToLoad = new Queue<Material>();
-        private const int maxSimultaneousLoads = 5;
 
         public MaterialsProfilerGUI(SceneProfiler profiler, Color defColor, Func<float> getRowHeight)
             : base(profiler, defColor)
@@ -135,21 +132,19 @@ namespace SceneProfiler.Editor.GUI
             }
 
             EditorGUILayout.EndScrollView();
-
-            ProcessMaterialQueue();
         }
 
         private void DrawThumbnail(MaterialDetails tDetails, Rect cellRect)
         {
             if (!materialPreviewCache.TryGetValue(tDetails.material, out var previewTexture) || previewTexture == null)
             {
-                if (!loadingMaterials.Contains(tDetails.material))
+                previewTexture = AssetPreview.GetAssetPreview(tDetails.material);
+                
+                if (previewTexture == null)
                 {
-                    loadingMaterials.Add(tDetails.material);
-                    materialsToLoad.Enqueue(tDetails.material);
+                    previewTexture = AssetPreview.GetMiniThumbnail(tDetails.material);
                 }
                 
-                previewTexture = AssetPreview.GetMiniThumbnail(tDetails.material);
                 materialPreviewCache[tDetails.material] = previewTexture;
             }
 
@@ -161,36 +156,6 @@ namespace SceneProfiler.Editor.GUI
             {
                 EditorGUI.LabelField(cellRect, "No Preview", labelStyle);
             }
-        }
-
-        private void ProcessMaterialQueue()
-        {
-            if (materialsToLoad.Count > 0)
-            {
-                int loadCount = Math.Min(maxSimultaneousLoads, materialsToLoad.Count);
-                for (int i = 0; i < loadCount; i++)
-                {
-                    Material material = materialsToLoad.Dequeue();
-                    LoadPreviewAsync(material);
-                }
-            }
-        }
-
-        private void LoadPreviewAsync(Material material)
-        {
-            if (AssetPreview.IsLoadingAssetPreview(material.GetInstanceID()))
-            {
-                return;
-            }
-
-            var fullPreviewTexture = AssetPreview.GetAssetPreview(material);
-
-            if (fullPreviewTexture != null)
-            {
-                materialPreviewCache[material] = fullPreviewTexture;
-            }
-
-            loadingMaterials.Remove(material);
         }
 
         private void DrawMaterialName(MaterialDetails tDetails, Rect cellRect)
