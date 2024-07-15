@@ -10,8 +10,6 @@ namespace SceneProfiler.Editor.GUI
     public class AudioClipsProfilerGUI : ProfilerGUI<AudioClipDetails>
     {
         private Func<float> _getRowHeight;
-        private Dictionary<AudioClip, Texture2D> audioClipPreviewCache = new Dictionary<AudioClip, Texture2D>();
-        private HashSet<AudioClip> loadingAudioClips = new HashSet<AudioClip>();
 
         public AudioClipsProfilerGUI(SceneProfiler profiler, Color defColor, Func<float> getRowHeight)
             : base(profiler, defColor)
@@ -129,16 +127,11 @@ namespace SceneProfiler.Editor.GUI
 
         private void DrawThumbnail(AudioClipDetails aDetails, Rect cellRect)
         {
-            if (!audioClipPreviewCache.TryGetValue(aDetails.clip, out var previewTexture) || previewTexture == null)
+            var previewTexture = AssetPreview.GetAssetPreview(aDetails.clip);
+    
+            if (previewTexture == null)
             {
-                if (!loadingAudioClips.Contains(aDetails.clip))
-                {
-                    loadingAudioClips.Add(aDetails.clip);
-                    EditorApplication.update += () => LoadPreviewAsync(aDetails.clip);
-                }
-                
                 previewTexture = AssetPreview.GetMiniThumbnail(aDetails.clip);
-                audioClipPreviewCache[aDetails.clip] = previewTexture;
             }
 
             if (previewTexture != null)
@@ -149,31 +142,6 @@ namespace SceneProfiler.Editor.GUI
             {
                 EditorGUI.LabelField(cellRect, "No Preview", labelStyle);
             }
-        }
-
-        private void LoadPreviewAsync(AudioClip clip)
-        {
-            if (AssetPreview.IsLoadingAssetPreview(clip.GetInstanceID()))
-            {
-                return; 
-            }
-            
-            if (clip == null || EditorApplication.isPlayingOrWillChangePlaymode || EditorApplication.isPlaying)
-            {
-                loadingAudioClips.Remove(clip);
-                EditorApplication.update -= () => LoadPreviewAsync(clip);
-                return;
-            }
-            
-            var fullPreviewTexture = AssetPreview.GetAssetPreview(clip);
-            
-            if (fullPreviewTexture != null)
-            {
-                audioClipPreviewCache[clip] = fullPreviewTexture;
-            }
-            
-            loadingAudioClips.Remove(clip);
-            EditorApplication.update -= () => LoadPreviewAsync(clip);
         }
 
         private void DrawName(AudioClipDetails aDetails, Rect cellRect)

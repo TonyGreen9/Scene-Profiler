@@ -83,6 +83,8 @@ namespace SceneProfiler.Editor
             _collectExpensiveObject = new CollectExpensiveObject(this);
             EditorSceneManager.sceneOpened += OnSceneOpened;
             EditorApplication.playModeStateChanged += OnPlayModeStateChanged;
+            SceneManager.sceneUnloaded += OnSceneUnloaded;
+            SceneManager.sceneLoaded += OnSceneLoaded;
             ClearAndRepaint();
         }
 
@@ -96,6 +98,17 @@ namespace SceneProfiler.Editor
         {
             ClearAndRepaint();
         }
+        
+        private void OnSceneUnloaded(Scene scene)
+        {
+            ClearAndRepaint();
+        }
+
+        private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+        {
+            ClearAndRepaint();
+        }
+
 
         private void OnPlayModeStateChanged(PlayModeStateChange state)
         {
