@@ -4,6 +4,8 @@
 
 The Scene Profiler Tool is a powerful utility designed to help Unity developers optimize their scenes by providing comprehensive profiling of various scene elements.
 
+Supports Unity 2022.2 or higher
+
 ## Table of Contents
 
 - [Overview](#overview)
