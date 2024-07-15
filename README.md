@@ -17,6 +17,9 @@ The Scene Profiler Tool is a powerful utility designed to help Unity developers 
   - [Textures Profiler](#textures-profiler)
   - [Warnings Data Collector](#warnings-data-collector)
   - [Missing Assets Profiler](#missing-assets-profiler)
+  - [Expensive Objects Profiler](#expensive-objects-profiler)
+- [Modularity](#modularity)
+- [Sorting and Multi-Column Usage](#sorting-and-multi-column-usage)
 - [Usage](#usage)
 - [Support](#support)
 - [License](#license)
@@ -72,6 +75,18 @@ Collects and displays warnings related to various aspects of the scene. Helps in
 
 Identifies and reports missing assets within the scene. Ensures that all necessary assets are present and properly referenced.
 
+### Expensive Objects Profiler
+
+Profiles objects in the scene that are deemed "expensive" due to their scale, hierarchy depth, or component count. Helps in identifying objects that may be causing performance bottlenecks due to their complexity.
+
+## Modularity
+
+The Scene Profiler Tool is modular, allowing you to enable or disable specific profiling modules based on your needs. This flexibility ensures that you can focus on the aspects of your scene that are most critical for optimization. Each module can be toggled on or off from the tool's interface.
+
+## Sorting and Multi-Column Usage
+
+The Scene Profiler Tool supports sorting and multi-column usage to enhance the analysis of profiling data. You can sort data within each profiler module by various criteria, such as name, size, and performance metrics. Additionally, the tool uses multi-column layouts to display detailed information for each profiled object, making it easier to compare and analyze data.
+
 ## Usage
 
 1. Open the Scene Profiler Tool window from the Unity menu: `Window > Analysis > Scene Profiler`.
@@ -80,6 +95,7 @@ Identifies and reports missing assets within the scene. Ensures that all necessa
 4. Review the collected data in the tool's interface. Use the insights provided to optimize the respective elements of your scene.
 5. To clear the collected data and refresh the interface, click the `Clear` button.
 6. To access additional settings for the profiler, click the `Settings` button. Here, you can configure options such as including disabled objects, looking in sprite animations, and more.
+7. Click the `Modules` button to toggle the display of different profiling modules.
 
 ## Support
 

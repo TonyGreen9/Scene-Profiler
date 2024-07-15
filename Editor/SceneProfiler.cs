@@ -436,12 +436,27 @@ namespace SceneProfiler.Editor
                 List<GameObject> allObjectsWithChildren = new List<GameObject>();
                 foreach (GameObject go in allObjects)
                 {
-                    allObjectsWithChildren.AddRange(go.GetComponentsInChildren<Transform>(true).Select(t => t.gameObject));
+                    allObjectsWithChildren.AddRange(go.GetComponentsInChildren<Transform>(true)
+                        .Select(t => t.gameObject));
                 }
                 return allObjectsWithChildren;
             }
-
-            return allObjects;
+            else
+            {
+                List<GameObject> allActiveObjectsWithChildren = new List<GameObject>();
+                foreach (GameObject go in allObjects)
+                {
+                    if (go.activeInHierarchy)
+                    {
+                        allActiveObjectsWithChildren.AddRange(go.GetComponentsInChildren<Transform>(false)
+                            .Where(t => t.gameObject.activeInHierarchy)
+                            .Select(t => t.gameObject));
+                    }
+                }
+                return allActiveObjectsWithChildren;
+            }
         }
+
+
     }
 }

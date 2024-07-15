@@ -6,7 +6,7 @@ namespace SceneProfiler.Editor
     public class CollectExpensiveObject
     {
         private SceneProfiler _sceneProfiler;
-        private const int HierarchyDepthThreshold = 3;
+        private const int HierarchyDepthThreshold = 7;
         private const int ComponentCountThreshold = 5;
 
         public CollectExpensiveObject(SceneProfiler sceneProfiler)
