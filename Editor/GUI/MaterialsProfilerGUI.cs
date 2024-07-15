@@ -11,6 +11,7 @@ namespace SceneProfiler.Editor.GUI
     public class MaterialsProfilerGUI : ProfilerGUI<MaterialDetails>
     {
         private Func<float> _getRowHeight;
+        private Dictionary<Material, Texture2D> materialPreviewCache = new Dictionary<Material, Texture2D>();
 
         public MaterialsProfilerGUI(SceneProfiler profiler, Color defColor, Func<float> getRowHeight)
             : base(profiler, defColor)
@@ -135,7 +136,20 @@ namespace SceneProfiler.Editor.GUI
 
         private void DrawThumbnail(MaterialDetails tDetails, Rect cellRect)
         {
-            UnityEngine.GUI.DrawTexture(cellRect, AssetPreview.GetAssetPreview(tDetails.material), ScaleMode.ScaleToFit);
+            if (!materialPreviewCache.TryGetValue(tDetails.material, out var previewTexture))
+            {
+                previewTexture = AssetPreview.GetAssetPreview(tDetails.material);
+                materialPreviewCache[tDetails.material] = previewTexture;
+            }
+
+            if (previewTexture != null)
+            {
+                UnityEngine.GUI.DrawTexture(cellRect, previewTexture, ScaleMode.ScaleToFit);
+            }
+            else
+            {
+                EditorGUI.LabelField(cellRect, "No Preview", labelStyle);
+            }
         }
 
         private void DrawMaterialName(MaterialDetails tDetails, Rect cellRect)

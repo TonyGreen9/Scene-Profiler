@@ -11,6 +11,7 @@ namespace SceneProfiler.Editor.GUI
     public class TexturesProfilerGUI : ProfilerGUI<TextureDetails>
     {
         private Func<float> _getRowHeight;
+        private Dictionary<Texture, Texture2D> texturePreviewCache = new Dictionary<Texture, Texture2D>();
 
         public TexturesProfilerGUI(SceneProfiler profiler, Color defColor, Func<float> getRowHeight)
             : base(profiler, defColor)
@@ -150,31 +151,39 @@ namespace SceneProfiler.Editor.GUI
 
         private void DrawThumbnail(TextureDetails tDetails, Rect cellRect)
         {
-            Texture tex = tDetails.texture;
-            if (tDetails.texture.GetType() == typeof(Texture2DArray) || tDetails.texture.GetType() == typeof(Cubemap))
+            if (!texturePreviewCache.TryGetValue(tDetails.texture, out var previewTexture))
             {
-                tex = AssetPreview.GetMiniThumbnail(tDetails.texture);
+                if (tDetails.texture == null)
+                {
+                    previewTexture = null;
+                }
+                else if (tDetails.texture.GetType() == typeof(Texture2DArray) || tDetails.texture.GetType() == typeof(Cubemap))
+                {
+                    previewTexture = AssetPreview.GetMiniThumbnail(tDetails.texture);
+                }
+                else
+                {
+                    previewTexture = AssetPreview.GetAssetPreview(tDetails.texture);
+                }
+                texturePreviewCache[tDetails.texture] = previewTexture;
             }
-            UnityEngine.GUI.DrawTexture(cellRect, tex, ScaleMode.ScaleToFit);
+
+            if (previewTexture != null)
+            {
+                UnityEngine.GUI.DrawTexture(cellRect, previewTexture, ScaleMode.ScaleToFit);
+            }
+            else
+            {
+                EditorGUI.LabelField(cellRect, "No Preview", labelStyle);
+            }
         }
 
         private void DrawTextureName(TextureDetails tDetails, Rect cellRect)
         {
-            Color originalColor = UnityEngine.GUI.color;
-
-            if (tDetails.instance)
-                UnityEngine.GUI.color = AdjustBrightness(UnityEngine.GUI.color, +0.2f);
-            if (tDetails.isgui)
-                UnityEngine.GUI.color = AdjustBrightness(UnityEngine.GUI.color, -0.2f);
-            if (tDetails.isSky)
-                UnityEngine.GUI.color = AdjustBrightness(UnityEngine.GUI.color, -0.4f);
-
             if (UnityEngine.GUI.Button(cellRect, tDetails.texture.name, buttonStyle))
             {
                 profiler.SelectObject(tDetails.texture, profiler.ctrlPressed);
             }
-
-            UnityEngine.GUI.color = originalColor;
         }
 
         private void DrawResolution(TextureDetails tDetails, Rect cellRect)
@@ -249,4 +258,3 @@ namespace SceneProfiler.Editor.GUI
         }
     }
 }
-
