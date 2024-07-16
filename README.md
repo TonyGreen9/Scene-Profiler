@@ -107,4 +107,5 @@ If you encounter any issues or have any questions regarding the Scene Profiler T
 
 ## License
 
-The Scene Profiler Tool is licensed under the MIT License. For more information, see the LICENSE file included in the package.
+The Scene Profiler Tool is licensed under the Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International Public License. For more information, see the LICENSE file included in the package.
+
