@@ -34,9 +34,9 @@ The Scene Profiler Tool provides detailed insights into the performance of vario
 
 ## Installation
 
+- Clone or [Download](https://github.com/TonyGreen9/Scene-Profiler/releases) this repository and move the Scene Profiler Folder to your Unity project's Assets folder  
+- Or import [SceneProfilerRelease.unitypackage](https://github.com/TonyGreen9/Scene-Profiler/releases/tag/Release) from releases  
 To install this package, follow the instructions in the [Package Manager documentation](https://docs.unity3d.com/Packages/com.unity.package-manager-ui@latest/index.html).
-Clone or [Download](https://github.com/TonyGreen9/Scene-Profiler/releases) this repository and move the Scene Profiler Folder to your Unity project's Assets folder
-Import [SceneProfilerRelease.unitypackage](https://github.com/TonyGreen9/Scene-Profiler/releases/tag/Release) from releases
 
 
 ## Getting Started
