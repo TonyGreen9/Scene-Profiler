@@ -1,3 +1,9 @@
+## Links
+[<img src="https://images.squarespace-cdn.com/content/v1/5bbc502865019fe7b132cdc0/1619022573920-HXS3VG6DNLBH6NYX2963/discord-button.png" width="200" />][discord]
+
+[discord]: https://discord.gg/ZGSwSuPYqc
+
+
 # Scene Profiler Tool for Unity
 
 ![Scene Profiler Tool](https://github.com/TonyGreen9/Scene-Profiler/raw/main/SceneProfiler.png)
