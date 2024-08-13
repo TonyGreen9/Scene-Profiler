@@ -85,6 +85,8 @@ namespace SceneProfiler.Editor.GUI
 
         public void DrawGUI()
         {
+            
+            _profiler.UpdateFlagsBasedOnModuleStates(_moduleStates);
             _defColor = UnityEngine.GUI.color;
 
             GUILayout.BeginHorizontal(EditorStyles.toolbar);
