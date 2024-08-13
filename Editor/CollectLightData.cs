@@ -12,7 +12,7 @@ namespace SceneProfiler.Editor
         {
             _sceneProfiler = sceneProfiler;
         }
-    
+
         public void CheckLights()
         {
             Light[] lights = _sceneProfiler.FindObjects<Light>();
@@ -26,14 +26,20 @@ namespace SceneProfiler.Editor
                         light = light,
                         isEnabled = light.enabled,
                         shadowType = light.shadows,
-                        isActive = light.gameObject.activeInHierarchy
+                        isActive = light.gameObject.activeInHierarchy,
+                        radius = light.type == LightType.Point ? light.range : 0f,  // Radius is relevant for point lights
+                        intensity = light.intensity,
+                        lightType = light.type,
+                        mode = light.lightmapBakeType,
+                        renderMode = light.renderMode,
+                        cullingMask = light.cullingMask
                     };
 
                     _sceneProfiler.ActiveLights.Add(lightDetails);
                 }
             }
         }
-    
+
         public void CheckLightReferences(FieldInfo field, MonoBehaviour script)
         {
             if (field.FieldType == typeof(Light))
@@ -46,7 +52,13 @@ namespace SceneProfiler.Editor
                         light = tLight,
                         isEnabled = tLight.enabled,
                         shadowType = tLight.shadows,
-                        isActive = tLight.gameObject.activeInHierarchy
+                        isActive = tLight.gameObject.activeInHierarchy,
+                        radius = tLight.type == LightType.Point ? tLight.range : 0f,  // Radius is relevant for point lights
+                        intensity = tLight.intensity,
+                        lightType = tLight.type,
+                        mode = tLight.lightmapBakeType,
+                        renderMode = tLight.renderMode,
+                        cullingMask = tLight.cullingMask
                     };
 
                     if (!_sceneProfiler.ActiveLights.Any(l => l.light == tLight))

@@ -16,7 +16,7 @@ namespace SceneProfiler.Editor
     {
         public enum InspectType
         {
-            Textures, Materials, Meshes, AudioClips, Missing, Particles, Lights, Physics, Expensive
+            Textures, Materials, Meshes, AudioClips, Missing, Particles, Lights, Physics, Expensive, SceneFile
         };
 
         public bool includeDisabledObjects = true;
@@ -26,6 +26,18 @@ namespace SceneProfiler.Editor
         public bool IncludeLightmapTextures = true;
         public bool IncludeSelectedFolder = false;
         public bool thingsMissing = false;
+        
+        public bool EnableExpensiveObjectCollection = true;
+        public bool EnableSceneFileCollection = true;
+        public bool EnableParticleSystemCollection = true;
+        public bool EnableLightCollection = true;
+        public bool EnablePhysicsObjectCollection = true;
+        public bool EnableMaterialCollection = true;
+        public bool EnableTextureCollection = true;
+        public bool EnableMeshCollection = true;
+        public bool EnableAudioClipCollection = true;
+        public bool EnableScriptReferencesCheck = true;
+        public bool EnableMissingScriptCheck = true;
 
         public InspectType ActiveInspectType = InspectType.Textures;
 
@@ -39,14 +51,21 @@ namespace SceneProfiler.Editor
         public List<PhysicsObjectDetails> ActivePhysicsObjects = new List<PhysicsObjectDetails>();
         public List<SceneWarningDetails> Warnings = new List<SceneWarningDetails>();
         public List<ExpensiveObjectDetails> ActiveExpensiveObjects = new List<ExpensiveObjectDetails>();
+        public List<SceneFileDetails> SceneFileDetails = new List<SceneFileDetails>();
+        public List<SceneFileDetails> SceneFileComponentsDetails = new List<SceneFileDetails>();
 
         public float TotalTextureMemory = 0;
         public int TotalMeshVertices = 0;
+        public int totalLineCount; 
 
         public bool ctrlPressed = false;
 
         private static int _minWidth = 800;
         public int currentObjectsInColumnCount = 100;
+        
+        private GameObject[] _cachedRootGameObjects;
+        private List<GameObject> _cachedDontDestroyOnLoadRoots;
+        private List<GameObject> _cachedAllGameObjects;
 
         private SceneProfilerGUI _sceneProfilerGUI;
         private CollectTextureData _collectTextureData;
@@ -58,6 +77,7 @@ namespace SceneProfiler.Editor
         private CollectPhysicsData _collectPhysicsData;
         private CollectWarningsData _collectWarningsData;
         private CollectExpensiveObject _collectExpensiveObject;
+        private CollectSceneFileData _сollectSceneFileData;
 
         [MenuItem("Window/Analysis/Scene Profiler")]
         public static void Init()
@@ -81,6 +101,7 @@ namespace SceneProfiler.Editor
             _collectPhysicsData = new CollectPhysicsData(this);
             _collectWarningsData = new CollectWarningsData(this);
             _collectExpensiveObject = new CollectExpensiveObject(this);
+            _сollectSceneFileData  = new CollectSceneFileData(this);
             EditorSceneManager.sceneOpened += OnSceneOpened;
             EditorApplication.playModeStateChanged += OnPlayModeStateChanged;
             SceneManager.sceneUnloaded += OnSceneUnloaded;
@@ -130,9 +151,11 @@ namespace SceneProfiler.Editor
             ActivePhysicsObjects.Clear();
             ActiveExpensiveObjects.Clear();
             Warnings.Clear();
+            SceneFileDetails.Clear();
 
             TotalTextureMemory = 0;
             TotalMeshVertices = 0;
+            totalLineCount = 0;
 
             thingsMissing = false;
 
@@ -204,6 +227,9 @@ namespace SceneProfiler.Editor
         // Main method
         public void CollectData()
         {
+            _cachedRootGameObjects = null;
+            _cachedDontDestroyOnLoadRoots = null;
+            _cachedAllGameObjects = null;
             ActiveTextures.Clear();
             ActiveMaterials.Clear();
             ActiveMeshDetails.Clear();
@@ -214,30 +240,79 @@ namespace SceneProfiler.Editor
             ActivePhysicsObjects.Clear();
             ActiveExpensiveObjects.Clear();
             thingsMissing = false;
-            _collectExpensiveObject.CollectData();
-            _сollectParticleSystemData.CheckParticleSystems();
-            _collectLightData.CheckLights();
-            _collectPhysicsData.CheckPhysicsObjects();
-            _collectMaterialsData.CheckRenderers();
-            _collectTextureData.CheckRenderers();
-            _collectTextureData.CheckLightmaps();
-            _collectMaterialsData.CheckGUIElements();
-            _collectTextureData.CheckGUIElements();
-            _collectMeshData.CheckMeshFilters();
-            _collectMeshData.CheckSkinnedMeshRenderers();
-            _collectMeshData.CheckLODGroups();
-            _collectTextureData.CheckSelectedFolder();
-            _collectAudioClipData.CheckSelectedFolder();
-            _collectTextureData.CheckSpriteAnimations();
-            CheckScriptReferences();
-            _collectTextureData.CheckMaterials(); //Collect all materials before
-            _collectAudioClipData.CheckAudioSources();
-            CheckForMissingScriptsInAllGameObjects();
 
+            // Start collecting data according to the flags, in the original order
+            
+            if (EnableExpensiveObjectCollection)
+                _collectExpensiveObject.CollectData();
+
+            if (EnableSceneFileCollection)
+                _сollectSceneFileData.CollectData();
+
+            if (EnableParticleSystemCollection)
+                _сollectParticleSystemData.CheckParticleSystems();
+
+            if (EnableLightCollection)
+                _collectLightData.CheckLights();
+
+            if (EnablePhysicsObjectCollection)
+                _collectPhysicsData.CheckPhysicsObjects();
+
+            if (EnableMaterialCollection)
+            {
+                _collectMaterialsData.CheckRenderers();
+                _collectMaterialsData.CheckGUIElements();
+            }
+
+            if (EnableTextureCollection)
+            {
+                _collectTextureData.CheckRenderers();
+                _collectTextureData.CheckLightmaps();
+                _collectTextureData.CheckGUIElements();
+                _collectTextureData.CheckSelectedFolder();
+                _collectTextureData.CheckSpriteAnimations();
+                _collectTextureData.CheckMaterials(); // Collect all materials before
+            }
+
+            if (EnableMeshCollection)
+            {
+                _collectMeshData.CheckMeshFilters();
+                _collectMeshData.CheckSkinnedMeshRenderers();
+                _collectMeshData.CheckLODGroups();
+            }
+
+            if (EnableAudioClipCollection)
+            {
+                _collectAudioClipData.CheckSelectedFolder();
+                _collectAudioClipData.CheckAudioSources();
+            }
+
+            if (EnableScriptReferencesCheck)
+                CheckScriptReferences();
+
+            if (EnableMissingScriptCheck)
+                CheckForMissingScriptsInAllGameObjects();
+
+            // Finalize by calculating totals and sorting materials
             CalculateTotals();
 
             ActiveMaterials.Sort(MaterialSorter);
             CheckWarnings();
+        }
+
+        
+        public void UpdateFlagsBasedOnModuleStates(Dictionary<InspectType, bool> moduleStates)
+        {
+            EnableTextureCollection = moduleStates[InspectType.Textures];
+            EnableMaterialCollection = moduleStates[InspectType.Materials];
+            EnableMeshCollection = moduleStates[InspectType.Meshes];
+            EnableAudioClipCollection = moduleStates[InspectType.AudioClips];
+            EnableParticleSystemCollection = moduleStates[InspectType.Particles];
+            EnableLightCollection = moduleStates[InspectType.Lights];
+            EnablePhysicsObjectCollection = moduleStates[InspectType.Physics];
+            EnableMissingScriptCheck = moduleStates[InspectType.Missing];
+            EnableExpensiveObjectCollection = moduleStates[InspectType.Expensive];
+            EnableSceneFileCollection = moduleStates[InspectType.SceneFile];
         }
 
         public void AddMissingSprite(SpriteRenderer tSpriteRenderer)
@@ -364,22 +439,34 @@ namespace SceneProfiler.Editor
 
         public GameObject[] GetAllRootGameObjects()
         {
-            List<GameObject> allGo = new List<GameObject>();
-            for (int sceneIdx = 0; sceneIdx < UnityEngine.SceneManagement.SceneManager.sceneCount; ++sceneIdx)
+            if (_cachedRootGameObjects != null)
             {
-                Scene scene = UnityEngine.SceneManagement.SceneManager.GetSceneAt(sceneIdx);
-                if (scene.isLoaded)
-                {
-                    allGo.AddRange(scene.GetRootGameObjects());
-                }
+                return _cachedRootGameObjects;
             }
 
-            allGo.AddRange(GetDontDestroyOnLoadRoots());
-            return allGo.ToArray();
+            List<GameObject> allGo = new List<GameObject>();
+        
+            for (int sceneIdx = 0; sceneIdx < SceneManager.sceneCount; ++sceneIdx)
+            {
+                Scene scene = SceneManager.GetSceneAt(sceneIdx);
+                if (scene.isLoaded)
+                {
+                    GameObject[] rootGameObjects = scene.GetRootGameObjects();
+                    allGo.AddRange(rootGameObjects);
+                }
+            }
+            _cachedRootGameObjects = allGo.ToArray();
+            return _cachedRootGameObjects;
         }
 
-        private static List<GameObject> GetDontDestroyOnLoadRoots()
+
+        private List<GameObject> GetDontDestroyOnLoadRoots()
         {
+            if (_cachedDontDestroyOnLoadRoots != null)
+            {
+                return _cachedDontDestroyOnLoadRoots;
+            }
+
             List<GameObject> objs = new List<GameObject>();
             if (Application.isPlaying)
             {
@@ -388,13 +475,13 @@ namespace SceneProfiler.Editor
                 {
                     temp = new GameObject();
                     DontDestroyOnLoad(temp);
-                    UnityEngine.SceneManagement.Scene dontDestryScene = temp.scene;
+                    Scene dontDestryScene = temp.scene;
                     DestroyImmediate(temp);
                     temp = null;
 
-                    if(dontDestryScene.IsValid())
+                    if (dontDestryScene.IsValid())
                     {
-                        objs =  dontDestryScene.GetRootGameObjects().ToList();
+                        objs = dontDestryScene.GetRootGameObjects().ToList();
                     }
                 }
                 catch (System.Exception e)
@@ -404,11 +491,12 @@ namespace SceneProfiler.Editor
                 }
                 finally
                 {
-                    if(temp != null)
+                    if (temp != null)
                         DestroyImmediate(temp);
                 }
             }
-            return objs;
+            _cachedDontDestroyOnLoadRoots = objs;
+            return _cachedDontDestroyOnLoadRoots;
         }
 
         public T[] FindObjects<T>() where T : Object
@@ -431,6 +519,11 @@ namespace SceneProfiler.Editor
         
         public List<GameObject> FindAllGameObjects()
         {
+            if (_cachedAllGameObjects != null)
+            {
+                return _cachedAllGameObjects;
+            }
+
             List<GameObject> allObjects = new List<GameObject>();
             for (int i = 0; i < SceneManager.sceneCount; i++)
             {
@@ -452,6 +545,7 @@ namespace SceneProfiler.Editor
                     allObjectsWithChildren.AddRange(go.GetComponentsInChildren<Transform>(true)
                         .Select(t => t.gameObject));
                 }
+                _cachedAllGameObjects = allObjectsWithChildren;
                 return allObjectsWithChildren;
             }
             else
@@ -466,10 +560,9 @@ namespace SceneProfiler.Editor
                             .Select(t => t.gameObject));
                     }
                 }
+                _cachedAllGameObjects = allActiveObjectsWithChildren;
                 return allActiveObjectsWithChildren;
             }
         }
-
-
     }
 }

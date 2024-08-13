@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using UnityEditor;
 using UnityEngine;
 
@@ -29,6 +30,7 @@ namespace SceneProfiler.Editor.GUI
         private AudioClipsProfilerGUI _audioClipsProfilerGUI;
         private WarningsGUI _warningsGUI;
         private ExpensiveProfilerGUI _expensiveProfilerGUI;
+        private SceneFileProfilerGUI _sceneFileProfilerGUI;
         
         private Dictionary<SceneProfiler.InspectType, bool> _moduleStates = new Dictionary<SceneProfiler.InspectType, bool>();
     
@@ -46,6 +48,7 @@ namespace SceneProfiler.Editor.GUI
             _audioClipsProfilerGUI = new AudioClipsProfilerGUI(profiler, _defColor, () => _rowHeight);
             _expensiveProfilerGUI = new ExpensiveProfilerGUI(profiler, _defColor);
             _warningsGUI = new WarningsGUI(profiler);
+            _sceneFileProfilerGUI = new SceneFileProfilerGUI(profiler, _defColor);
             
             _moduleStates = new Dictionary<SceneProfiler.InspectType, bool>
             {
@@ -57,7 +60,8 @@ namespace SceneProfiler.Editor.GUI
                 { SceneProfiler.InspectType.Lights, true },
                 { SceneProfiler.InspectType.Physics, true },
                 { SceneProfiler.InspectType.Missing, true },
-                { SceneProfiler.InspectType.Expensive, true }
+                { SceneProfiler.InspectType.Expensive, true },
+                { SceneProfiler.InspectType.SceneFile, false }
             };
             
         }
@@ -141,7 +145,8 @@ namespace SceneProfiler.Editor.GUI
                 $"Particles ({_profiler.ActiveParticleSystems.Count})",
                 $"Lights ({_profiler.ActiveLights.Count})",
                 $"Physics ({_profiler.ActivePhysicsObjects.Count})",
-                $"Expensive ({_profiler.ActiveExpensiveObjects.Count})"
+                $"Expensive ({_profiler.ActiveExpensiveObjects.Count})",
+                $"Scene File ({_profiler.SceneFileDetails.Count})\n{_profiler.totalLineCount} lines"
             };
 
             for (int i = 0; i < toolbarLabels.Length; i++)
@@ -194,6 +199,9 @@ namespace SceneProfiler.Editor.GUI
                     break;
                 case SceneProfiler.InspectType.Expensive:
                     _expensiveProfilerGUI.ListExpensiveObjects();
+                    break;
+                case SceneProfiler.InspectType.SceneFile:
+                    _sceneFileProfilerGUI.ListSceneFileDetails();
                     break;
             }
         }
@@ -254,6 +262,7 @@ namespace SceneProfiler.Editor.GUI
             }
 
             _moduleStates[type] = !_moduleStates[type];
+            _profiler.UpdateFlagsBasedOnModuleStates(_moduleStates);
 
             if (!_moduleStates[_profiler.ActiveInspectType])
             {

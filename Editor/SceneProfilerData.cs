@@ -92,10 +92,16 @@ namespace SceneProfiler.Editor
 
     public class LightDetails
     {
-        public Light light;
-        public bool isEnabled;
-        public LightShadows shadowType;
-        public bool isActive;
+        public Light light;              // Reference to the Light component
+        public bool isEnabled;           // Whether the light is enabled
+        public LightShadows shadowType;  // Type of shadows the light casts
+        public bool isActive;            // Whether the light is active in the scene
+        public float radius;             // The radius of the light (if applicable, e.g., for point lights)
+        public float intensity;          // The intensity of the light
+        public LightType lightType;      // The type of light (e.g., Point, Directional, Spot)
+        public LightmapBakeType mode;    // The baking mode of the light (e.g., Realtime, Mixed, Baked)
+        public LightRenderMode renderMode; // The rendering mode (e.g., Auto, Important, NotImportant)
+        public int cullingMask;          // The culling mask that determines which objects are affected by the light
     }
 
     public class ParticleSystemDetails
@@ -205,4 +211,59 @@ namespace SceneProfiler.Editor
             return gameObject.GetHashCode();
         }
     }
+    
+    public class SceneFileDetails
+    {
+        public string gameObjectName; // The name of the GameObject in the scene file
+        public GameObject gameObject; // The actual GameObject in the scene (if found)
+        public int lineCount;         // The number of lines occupied by this object in the scene file
+        public string objectType;     // The type of the object (e.g., Prefab, GameObject)
+        public string identifier;     // The identifier of the GameObject or Prefab in the scene
+        public string guid;           // The GUID of the GameObject or Prefab
+        public float sizeInKB;        // Size of the GameObject in KB
+        public float sizePercentage;  // Percentage of the total file size occupied by this GameObject
+        public int componentCount;    // The number of components associated with this GameObject
+        public List<ComponentDetails> components; // List of components associated with this GameObject
+
+        public SceneFileDetails(string name, GameObject gameObject, int lineCount, string objectType, string identifier, string guid, float sizeInKB, float sizePercentage)
+        {
+            this.gameObjectName = name;
+            this.gameObject = gameObject;
+            this.lineCount = lineCount;
+            this.objectType = objectType;
+            this.identifier = identifier;
+            this.guid = guid;
+            this.sizeInKB = sizeInKB;
+            this.sizePercentage = sizePercentage;
+            this.components = new List<ComponentDetails>();
+            this.componentCount = components.Count; // Initialize with the current count of components
+        }
+        
+        public void UpdateComponentCount()
+        {
+            this.componentCount = components.Count;
+        }
+    }   
+    
+
+    public class ComponentDetails
+    {
+        public Component component;   // Reference to the component
+        public string componentType;  // The type of the component
+        public int lineCount;         // Number of lines occupied by this component in the scene file
+        public string identifier;     // The identifier of the component in the scene file
+        public float sizeInKB;        // Size of the component in KB
+        public float sizePercentage;  // Percentage of the total file size occupied by this component
+
+        public ComponentDetails(Component component, string componentType, int lineCount, string identifier, string guid, float sizeInKB, float sizePercentage)
+        {
+            this.component = component;
+            this.componentType = componentType;
+            this.lineCount = lineCount;
+            this.identifier = identifier;
+            this.sizeInKB = sizeInKB;
+            this.sizePercentage = sizePercentage;
+        }
+    }
+
 }
