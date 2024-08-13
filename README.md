@@ -95,6 +95,10 @@ Identifies and reports missing assets within the scene. Ensures that all necessa
 
 Profiles objects in the scene that are deemed "expensive" due to their scale, hierarchy depth, or component count. Helps in identifying objects that may be causing performance bottlenecks due to their complexity.
 
+### Scene File Profiler
+
+The Scene File Profiler identifies objects within the scene that have the most significant impact on the file size. By analyzing the components and their contributions to the overall scene file, this profiler helps pinpoint which elements are responsible for large file sizes, enabling targeted optimizations to reduce loading times and improve performance.
+
 ## Modularity
 
 The Scene Profiler Tool is modular, allowing you to enable or disable specific profiling modules based on your needs. This flexibility ensures that you can focus on the aspects of your scene that are most critical for optimization. Each module can be toggled on or off from the tool's interface.
