@@ -30,6 +30,7 @@ Supports Unity 2022.2 or higher
   - [Warnings Data Collector](#warnings-data-collector)
   - [Missing Assets Profiler](#missing-assets-profiler)
   - [Expensive Objects Profiler](#expensive-objects-profiler)
+  - [Scene File Profiler](#scene-file-profiler)
 - [Modularity](#modularity)
 - [Sorting and Multi-Column Usage](#sorting-and-multi-column-usage)
 - [Usage](#usage)
